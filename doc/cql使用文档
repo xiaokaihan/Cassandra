@@ -1,0 +1,83 @@
+Cassandra Query Language
+
+创建KEYSPACE：
+	keyspace有两种策略,一个是 SimpleStrategy,另一个是 NetworkTopologyStrategy
+	
+	1. SimpleStrategy，(单数据中心)该模式下需要指定复制策略,冗余几份数据,如:
+	
+			CREATE KEYSPACE IF NOT EXISTS keysdemo WITH REPLICATION = {'class': 'SimpleStrategy','replication_factor':1};
+	
+	2. NetworkTopologyStrategy，该模式是基于数据中心-机架的,创建基于此模式的KEYSPACE必须在配置文件中配置成该模式,否则将会报异常:
+		！！！！Unable to complete request: one or more nodes were unavailable
+	创建代码如下:
+
+		CREATE KEYSPACE keysdemo WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'dc1' :3 };
+
+
+表操作：
+
+1.创建表：
+ 进入keyspace：
+	USE keysdemo; 
+
+	CREATE TABLE IF NOT EXISTS users (
+		id int,
+		first_name varchar,
+		last_name varchar,
+		gender varchar,
+		age int,
+		PRIMARY KEY (id)
+	);
+
+2.插入 insert：
+	INSERT INTO keysdemo.users" + "(id, fname, lname, gender, age, email)" + "VALUES(?, ?, ?, ?, ?, ?);
+
+3.查询 select：
+	//查询表的所有数据
+	select * from keysdemo.users;
+
+	//查询表的记录总数	
+	select count(*) from keysdemo.users;
+	
+	//查询结果只包含 name,score 以及内置字段 (objectId,createdAt 等)
+	select name,score from keysdemo.users;
+	
+	//根据 name 查找
+	select * from keysdemo.users where fname='key6'
+	
+	//根据 name 和 score 同时查找
+	select * from keysdemo.users where name is exists and score > 80 and score <= 100;
+	
+	//查找，打印前100条数据
+	select * from keysdemo.users limit 100;
+	
+	//根据 score 和 name 排序
+	select * from keysdemo.users order by id;
+
+4. 更新 update：
+	update keysdemo.users set gender = 'male' where id = 1;
+
+5. 更改 alter：
+	# add colume with alter columefamily
+	ALTER TABLE users ADD hobby varchar;
+	
+	# drop column
+	ALTER TABLE users DROP gender;
+	
+	# error!!! can't do this. if you want change the type, you should newly inserted.
+	ALTER TABLE users ALTER gender TYPE int;
+	
+6. 创建 secondary index：
+	create index on users(last_name);
+
+7. 删除：
+	# Deleting Columns and Rows value
+	# Deleting Columns
+	DELETE password FROM users where id = 1;
+	# Deleting rows
+	DELETE FROM users where id = 2';
+	
+	# Dropping Column Families and Keyspaces
+	DROP table users;
+	DROP keyspace keysdemo;
+	

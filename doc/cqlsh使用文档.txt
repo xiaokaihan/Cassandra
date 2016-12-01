@@ -1,0 +1,53 @@
+login 192.168.3.103/104/105: 
+username：root 
+password: cas2016
+
+1. Enter the CQL client
+
+	root@cas02:~# cqlsh 192.168.3.103
+	Connected to 2gotrade HP Cluster at 192.168.3.103:9042.
+	[cqlsh 5.0.1 | Cassandra 3.0.8.1293 | DSE 5.0.2 | CQL spec 3.4.0 | Native protocol v4]
+	Use HELP for help.
+
+2. Check the keyspace.(below command is not case sensitive, and end with ';')
+
+!!!noted: DESCRIBE can be written as desc. 
+
+cqlsh> DESCRIBE keyspaces;
+
+	hkex_test      system_auth  dse_leases          system_traces
+	dse_security   system       keyspace1           dse_perf
+	hkex           cfs_archive  "HiveMetaStore"     cfs
+	system_schema  killrvideo   system_distributed  dse_system
+
+3. Enter a keyspace.
+
+	cqlsh> use hkex_test;
+
+4. Check the tables in this keyspace.
+
+cqlsh:hkex_test> describe tables;
+
+	order_book  ohlcv_1hour  ohlcv_1day  ohlcv_1minute  ticker  gps
+
+5. Check a table.
+
+	cqlsh:hkex_test> select * from ticker;
+
+6. create table.
+
+	cqlsh:hkex_test> create table tablename (user_id int PRIMARY KEY,fname text,lname text);
+
+7.  insert data.
+
+	cqlsh:hkex_test> insert into tablename (user_id, fname, lname) values (1, 'xxx', 'xxx');
+
+8. drop table;
+	
+	cqlsh:hkex_test> drop table tablename;
+
+9. truncate table;
+
+!!!
+10. 在cqlsh命令行中使用COPY命令
+	cqlsh:keyspacename> COPY test_table TO ‘/home/user/data.csv’;

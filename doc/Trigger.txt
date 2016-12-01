@@ -1,0 +1,50 @@
+Cassandra Trigger Example:
+==========================
+
+The AuditTrigger class will create a basic audit of activity on a table.
+
+Installation:
+==================================================================
+AuditTrigger:
+	AuditTrigger类的作用是： 当在table1中配置这个trigger时， 使得该table1与Trigger中绑定的table2相关联。 
+	当table1中的数据发生变化时，可以在table2看到table1中的变化。
+	将AuditTrigger类和对应的配置文件打包成cassandra_Trigger.jar, 这个上传的jar包时在本机buil好的，
+	将 trigger-jar/cassandra_Trigger.jar 拷贝到cassandra服务器的  /etc/dse/cassandra/triggers 目录下, 
+	然后再将配置文件 conf/AuditTrigger.properties 拷贝到cassandra服务器的    /etc/dse/cassandra 目录下。 
+	完成之后要重启cassandra服务。
+
+TriggerTest:
+	TriggerTest实现：	创建了一个键空间，并在该键空间中分别创建两个不同的table, 然后在test表中配置一个trigger，该trigger中关联的是表audit。 (AuditTrigger)。
+					该trigger类需要已经被打包成jar并上传到cassandra服务器中，才能配置成功。
+					当在test表中插入数据是， 在audit表中可以查询到test表的变化。
+	
+	
+	1. Create the keyspace and table configured in AuditTrigger.properties:
+	   	
+	     CREATE KEYSPACE test WITH REPLICATION =
+	        { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };
+	    
+	     CREATE TABLE test.audit (key timeuuid, keyspace_name text,
+	        table_name text, primary_key text, PRIMARY KEY(key));
+	
+	2. Create a table to add the trigger to:
+	   
+	    ！！！Note: The example currently only handles non-composite partition keys
+	    CREATE TABLE test.test (key text, value text, PRIMARY KEY(key));
+	
+	3. Configure the trigger on the table:
+	   
+	   	CREATE TRIGGER test1 ON test.test
+	        USING 'org.apache.cassandra.triggers.AuditTrigger';
+	
+	Start inserting data to the table that has the trigger. For each
+	partition added to the table an entry should appear in the 'audit' table:
+	  
+	    INSERT INTO test.test (key, value) values ('1', '1');
+	  
+	    SELECT * FROM test.audit;
+
+	    key                                  | keyspace_name | primary_key | table_name
+	   --------------------------------------+---------------+-------------+------------
+	    7dc75b60-770f-11e5-9019-033d8af33e6f |          test |           1 |       test
+
